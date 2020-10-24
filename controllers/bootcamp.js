@@ -1,5 +1,6 @@
 const ErrorResponse = require('../utils/errorResponse');
 const advancedResults = require('../utils/advancedResults');
+const imageUpload = require('../utils/imageUpload');
 const geocoder = require('../utils/geocoder');
 const Bootcamp = require('../models/Bootcamp');
 
@@ -91,5 +92,26 @@ exports.getInRadius = async (req, res) => {
     success: true,
     count: bootcamps.length,
     data: bootcamps,
+  });
+};
+
+/**
+ * Upload bootcamp photo
+ * @route   PUT /api/bootcamps/:id/photo
+ * @access  Private
+ */
+exports.photoUpload = async (req, res) => {
+  const bootcamp = await Bootcamp.findById(req.params.id);
+
+  if (!bootcamp) throw new ErrorResponse('Bootcamp Not Found', 404);
+  if (!req.files) throw new ErrorResponse('Please upload a file', 400);
+
+  const filename = imageUpload(req.files.file, `photo_${bootcamp._id}`);
+
+  await Bootcamp.findByIdAndUpdate(req.params.id, { photo: filename });
+
+  res.json({
+    success: true,
+    data: filename,
   });
 };

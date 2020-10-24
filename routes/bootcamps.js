@@ -14,6 +14,10 @@ router
   .put(bootcamp.update)
   .delete(bootcamp.destroy);
 
+router
+  .route('/:id/photo')
+  .put(bootcamp.photoUpload);
+
 router.route('/radius/:zipcode/:distance').get(bootcamp.getInRadius);
 
 module.exports = router;
