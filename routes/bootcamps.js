@@ -14,4 +14,6 @@ router
   .put(bootcamp.update)
   .delete(bootcamp.destroy);
 
+router.route('/radius/:zipcode/:distance').get(bootcamp.getInRadius);
+
 module.exports = router;
