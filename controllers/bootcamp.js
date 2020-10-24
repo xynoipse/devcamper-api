@@ -1,4 +1,5 @@
 const ErrorResponse = require('../utils/errorResponse');
+const advancedResults = require('../utils/advancedResults');
 const geocoder = require('../utils/geocoder');
 const Bootcamp = require('../models/Bootcamp');
 
@@ -8,13 +9,8 @@ const Bootcamp = require('../models/Bootcamp');
  * @access  Public
  */
 exports.index = async (req, res) => {
-  const bootcamps = await Bootcamp.find();
-
-  res.json({
-    success: true,
-    count: bootcamps.length,
-    data: bootcamps,
-  });
+  const results = await advancedResults(req, Bootcamp);
+  res.json(results);
 };
 
 /**
