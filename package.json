@@ -6,6 +6,7 @@
   "scripts": {
     "start": "node server",
     "dev": "nodemon server",
+    "seed": "node database/seeder",
     "test": "jest --watchAll --verbose --coverage --runInBand"
   },
   "author": "Jason",
