@@ -1,10 +1,12 @@
-require('dotenv').config();
 const fs = require('fs');
+const config = require('config');
 const mongoose = require('mongoose');
 
 const Bootcamp = require('../models/Bootcamp');
 
-mongoose.connect(process.env.MONGO_URI, {
+const db = config.get('mongoURI');
+
+mongoose.connect(db, {
   useNewUrlParser: true,
   useCreateIndex: true,
   useFindAndModify: false,

@@ -1,4 +1,6 @@
 /node_modules
+/config/development.json
+/config/production.json
+/config/test.json
 /coverage
 /logs
-.env

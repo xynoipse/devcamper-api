@@ -1,0 +1,10 @@
+{
+  "port": "5000",
+  "mongoURI": "mongodb://localhost/devcamper",
+
+  "geocoderProvider": "",
+  "geocoderApiKey": "",
+  
+  "fileUploadPath": "",
+  "maxFileUpload": ""
+}

@@ -1,9 +1,10 @@
+const config = require('config');
 const NodeGeocoder = require('node-geocoder');
 
 const options = {
-  provider: process.env.GEOCODER_PROVIDER,
+  provider: config.get('geocoderProvider'),
   httpAdapter: 'https',
-  apiKey: process.env.GEOCODER_API_KEY,
+  apiKey: config.get('geocoderApiKey'),
   formatter: null,
 };
 

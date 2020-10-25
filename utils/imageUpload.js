@@ -1,9 +1,11 @@
 const fs = require('fs');
 const path = require('path');
+const config = require('config');
 const ErrorResponse = require('../utils/errorResponse');
 
 const imageUpload = (file, filename) => {
-  const fileUploadPath = process.env.FILE_UPLOAD_PATH;
+  const fileUploadPath = config.get('fileUploadPath');
+
   if (!fileUploadPath)
     throw new ErrorResponse('Please specify file upload path', 400);
 
@@ -13,9 +15,11 @@ const imageUpload = (file, filename) => {
   if (!file.mimetype.startsWith('image'))
     throw new ErrorResponse('Please upload a valid image file', 400);
 
-  if (!file.size > process.env.MAX_FILE_UPLOAD)
+  const maxFileUpload = config.get('maxFileUpload');
+
+  if (!file.size > maxFileUpload)
     throw new ErrorResponse(
-      `Please upload a image less than ${process.env.MAX_FILE_UPLOAD}`,
+      `Please upload a image less than ${maxFileUpload}`,
       400
     );
 

@@ -1,0 +1,10 @@
+{
+  "port": "PORT",
+  "mongoURI": "MONGO_URI",
+
+  "geocoderProvider": "GEOCODER_PROVIDER",
+  "geocoderApiKey": "GEOCODER_API_KEY",
+
+  "fileUploadPath": "FILE_UPLOAD_PATH",
+  "maxFileUpload": "MAX_FILE_UPLOAD"
+}

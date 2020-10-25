@@ -1,8 +1,11 @@
+const config = require('config');
 const mongoose = require('mongoose');
 const logger = require('../utils/logger');
 
+const db = config.get('mongoURI');
+
 module.exports = async () => {
-  const conn = await mongoose.connect(process.env.MONGO_URI, {
+  const conn = await mongoose.connect(db, {
     useNewUrlParser: true,
     useUnifiedTopology: true,
     useCreateIndex: true,
