@@ -1,4 +1,5 @@
 const supertest = require('supertest');
+const mongoose = require('mongoose');
 const Bootcamp = require('../../../models/Bootcamp');
 const app = require('../../../app');
 const request = supertest(app);
@@ -8,6 +9,10 @@ describe('errorHandler middleware', () => {
   let id;
   let body;
   let bootcamp;
+
+  afterAll(() => {
+    mongoose.connection.close();
+  });
 
   beforeEach(async () => {
     bootcamp = await Bootcamp.insertMany([
