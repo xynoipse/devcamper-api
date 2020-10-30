@@ -16,7 +16,7 @@ exports.index = async (req, res) => {
 
 /**
  * Create a new bootcamp
- * @route   POST /api/bootcamps/:id
+ * @route   POST /api/bootcamps/
  * @access  Private
  */
 exports.create = async (req, res) => {
