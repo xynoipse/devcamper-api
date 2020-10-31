@@ -1,6 +1,7 @@
 const supertest = require('supertest');
 const mongoose = require('mongoose');
 const Bootcamp = require('../../../models/Bootcamp');
+const Course = require('../../../models/Course');
 const app = require('../../../app');
 const request = supertest(app);
 
@@ -391,6 +392,92 @@ describe('/api/bootcamps', () => {
 
       expect(res.status).toBe(200);
       expect(res.body.success).toBe(true);
+    });
+  });
+
+  describe('POST /:bootcampId/courses', () => {
+    let bootcamp;
+    let bootcampId;
+    let body;
+
+    const exec = () => {
+      return request.post(`/api/bootcamps/${bootcampId}/courses`).send(body);
+    };
+
+    beforeEach(async () => {
+      bootcamp = await Bootcamp.create({
+        name: 'bootcamp1',
+        description: 'description',
+        address: 'address',
+        careers: ['Web Development'],
+      });
+
+      bootcampId = bootcamp._id;
+
+      body = {
+        title: 'course1',
+        description: 'description',
+        weeks: 1,
+        tuition: 1000,
+        minimumSkill: 'beginner',
+        bootcamp: bootcamp._id,
+      };
+    });
+
+    afterEach(async () => {
+      await Course.deleteMany();
+    });
+
+    it('should return 400 if there is a validation error', async () => {
+      delete body.title;
+
+      const res = await exec();
+
+      expect(res.status).toBe(400);
+      expect(res.body.success).toBe(false);
+      expect(res.body.message).toBeDefined();
+      expect(res.body.errors.title).toBeDefined();
+    });
+
+    it('should return 404 if bootcampId is invalid', async () => {
+      bootcampId = 1;
+
+      const res = await exec();
+
+      expect(res.status).toBe(404);
+      expect(res.body.success).toBe(false);
+      expect(res.body.message).toBeDefined();
+    });
+
+    it('should return 404 if bootcamp with the given bootcampId was not found', async () => {
+      bootcampId = mongoose.Types.ObjectId();
+
+      const res = await exec();
+
+      expect(res.status).toBe(404);
+      expect(res.body.success).toBe(false);
+      expect(res.body.message).toBeDefined();
+    });
+
+    it('should save the bootcamp course if it is valid', async () => {
+      await exec();
+
+      const course = await Course.findOne({ bootcamp: bootcampId });
+
+      expect(course).not.toBeNull();
+      expect(course).toHaveProperty('title', body.title);
+    });
+
+    it('should return the created bootcamp course if it is valid', async () => {
+      const res = await exec();
+
+      expect(res.body.success).toBe(true);
+      expect(res.body.data).toHaveProperty('_id');
+      expect(res.body.data).toHaveProperty('title', body.title);
+      expect(res.body.data).toHaveProperty(
+        'bootcamp',
+        bootcampId.toHexString()
+      );
     });
   });
 });

@@ -10,7 +10,7 @@ const Bootcamp = require('../models/Bootcamp');
  * @access  Public
  */
 exports.index = async (req, res) => {
-  const results = await advancedResults(req, Bootcamp);
+  const results = await advancedResults(req, Bootcamp, 'courses');
   res.json(results);
 };
 
@@ -60,9 +60,11 @@ exports.update = async (req, res) => {
  * @access  Private
  */
 exports.destroy = async (req, res) => {
-  const bootcamp = await Bootcamp.findByIdAndDelete(req.params.id);
+  const bootcamp = await Bootcamp.findById(req.params.id);
 
   if (!bootcamp) throw new ErrorResponse('Bootcamp Not Found', 404);
+
+  await bootcamp.remove();
 
   res.json({ success: true, data: {} });
 };
