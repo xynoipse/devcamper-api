@@ -13,6 +13,7 @@ module.exports = (app) => {
   // Mount routers
   app.use('/api/bootcamps', require('../routes/bootcamps'));
   app.use('/api/courses', require('../routes/courses'));
+  app.use('/api/auth', require('../routes/auth'));
 
   app.use(errorHandler);
 };

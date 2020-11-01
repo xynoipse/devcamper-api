@@ -2,6 +2,10 @@
   "port": "5000",
   "mongoURI": "mongodb://localhost/devcamper",
 
+  "jwtSecret": "SECRET",
+  "jwtExpire": "30d",
+  "jwtCookieExpire": "30",
+
   "geocoderProvider": "",
   "geocoderApiKey": "",
   

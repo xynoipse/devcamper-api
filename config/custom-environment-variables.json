@@ -2,6 +2,10 @@
   "port": "PORT",
   "mongoURI": "MONGO_URI",
 
+  "jwtSecret": "JWT_SECRET",
+  "jwtExpire": "JWT_EXPIRE",
+  "jwtCookieExpire": "JWT_COOKIE_EXPIRE",
+
   "geocoderProvider": "GEOCODER_PROVIDER",
   "geocoderApiKey": "GEOCODER_API_KEY",
 
