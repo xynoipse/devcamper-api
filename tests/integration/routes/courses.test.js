@@ -2,13 +2,30 @@ const supertest = require('supertest');
 const mongoose = require('mongoose');
 const Course = require('../../../models/Course');
 const Bootcamp = require('../../../models/Bootcamp');
+const User = require('../../../models/User');
 const app = require('../../../app');
 const request = supertest(app);
 
 describe('/api/courses', () => {
+  let publisher;
+  let user;
   let bootcamp;
 
   beforeAll(async () => {
+    publisher = await User.create({
+      name: 'Publisher',
+      email: 'publisher@publisher.com',
+      password: 'password',
+      role: 'publisher',
+    });
+
+    user = await User.create({
+      name: 'User',
+      email: 'user@user.com',
+      password: 'password',
+      role: 'user',
+    });
+
     bootcamp = await Bootcamp.create({
       name: 'bootcamp1',
       description: 'description',
@@ -18,6 +35,7 @@ describe('/api/courses', () => {
   });
 
   afterAll(async () => {
+    await User.deleteMany();
     await Bootcamp.deleteMany();
     mongoose.connection.close();
   });
@@ -199,14 +217,20 @@ describe('/api/courses', () => {
   });
 
   describe('PUT /:id', () => {
+    let token;
     let id;
     let title;
 
     const exec = () => {
-      return request.put(`/api/courses/${id}`).send({ title });
+      return request
+        .put(`/api/courses/${id}`)
+        .set('Authorization', `Bearer ${token}`)
+        .send({ title });
     };
 
     beforeEach(async () => {
+      token = publisher.generateAuthToken();
+
       const course = await Course.create({
         title: 'course1',
         description: 'description',
@@ -218,6 +242,22 @@ describe('/api/courses', () => {
 
       id = course._id;
       title = 'newTitle';
+    });
+
+    it('should return 401 if client is not logged in', async () => {
+      token = '';
+
+      const res = await exec();
+
+      expect(res.status).toBe(401);
+    });
+
+    it('should return 403 if client is unauthorized', async () => {
+      token = user.generateAuthToken();
+
+      const res = await exec();
+
+      expect(res.status).toBe(403);
     });
 
     it('should return 400 if there is a validation error', async () => {
@@ -270,13 +310,18 @@ describe('/api/courses', () => {
   });
 
   describe('DELETE /:id', () => {
+    let token;
     let id;
 
     const exec = () => {
-      return request.delete(`/api/courses/${id}`);
+      return request
+        .delete(`/api/courses/${id}`)
+        .set('Authorization', `Bearer ${token}`);
     };
 
     beforeEach(async () => {
+      token = publisher.generateAuthToken();
+
       const course = await Course.create({
         title: 'course1',
         description: 'description',
@@ -287,6 +332,22 @@ describe('/api/courses', () => {
       });
 
       id = course._id;
+    });
+
+    it('should return 401 if client is not logged in', async () => {
+      token = '';
+
+      const res = await exec();
+
+      expect(res.status).toBe(401);
+    });
+
+    it('should return 403 if client is unauthorized', async () => {
+      token = user.generateAuthToken();
+
+      const res = await exec();
+
+      expect(res.status).toBe(403);
     });
 
     it('should return 404 if id is invalid', async () => {

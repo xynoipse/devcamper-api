@@ -2,11 +2,32 @@ const supertest = require('supertest');
 const mongoose = require('mongoose');
 const Bootcamp = require('../../../models/Bootcamp');
 const Course = require('../../../models/Course');
+const User = require('../../../models/User');
 const app = require('../../../app');
 const request = supertest(app);
 
 describe('/api/bootcamps', () => {
-  afterAll(() => {
+  let publisher;
+  let user;
+
+  beforeAll(async () => {
+    publisher = await User.create({
+      name: 'Publisher',
+      email: 'publisher@publisher.com',
+      password: 'password',
+      role: 'publisher',
+    });
+
+    user = await User.create({
+      name: 'User',
+      email: 'user@user.com',
+      password: 'password',
+      role: 'user',
+    });
+  });
+
+  afterAll(async () => {
+    await User.deleteMany();
     mongoose.connection.close();
   });
 
@@ -133,19 +154,41 @@ describe('/api/bootcamps', () => {
   });
 
   describe('POST /', () => {
+    let token;
     let body;
 
     const exec = () => {
-      return request.post('/api/bootcamps').send(body);
+      return request
+        .post('/api/bootcamps')
+        .set('Authorization', `Bearer ${token}`)
+        .send(body);
     };
 
-    beforeEach(() => {
+    beforeEach(async () => {
+      token = publisher.generateAuthToken();
+
       body = {
         name: 'bootcamp1',
         description: 'description',
         address: 'address',
         careers: ['Web Development'],
       };
+    });
+
+    it('should return 401 if client is not logged in', async () => {
+      token = '';
+
+      const res = await exec();
+
+      expect(res.status).toBe(401);
+    });
+
+    it('should return 403 if client is unauthorized', async () => {
+      token = user.generateAuthToken();
+
+      const res = await exec();
+
+      expect(res.status).toBe(403);
     });
 
     it('should return 400 if there is a duplicate key error', async () => {
@@ -252,14 +295,20 @@ describe('/api/bootcamps', () => {
   });
 
   describe('PUT /:id', () => {
+    let token;
     let id;
     let name;
 
     const exec = () => {
-      return request.put(`/api/bootcamps/${id}`).send({ name });
+      return request
+        .put(`/api/bootcamps/${id}`)
+        .set('Authorization', `Bearer ${token}`)
+        .send({ name });
     };
 
     beforeEach(async () => {
+      token = publisher.generateAuthToken();
+
       await Bootcamp.insertMany([
         {
           name: 'bootcamp1',
@@ -279,6 +328,22 @@ describe('/api/bootcamps', () => {
 
       id = bootcamp._id;
       name = 'newName';
+    });
+
+    it('should return 401 if client is not logged in', async () => {
+      token = '';
+
+      const res = await exec();
+
+      expect(res.status).toBe(401);
+    });
+
+    it('should return 403 if client is unauthorized', async () => {
+      token = user.generateAuthToken();
+
+      const res = await exec();
+
+      expect(res.status).toBe(403);
     });
 
     it('should return 400 if there is a duplicate key error', async () => {
@@ -342,13 +407,18 @@ describe('/api/bootcamps', () => {
   });
 
   describe('DELETE /:id', () => {
+    let token;
     let id;
 
     const exec = () => {
-      return request.delete(`/api/bootcamps/${id}`);
+      return request
+        .delete(`/api/bootcamps/${id}`)
+        .set('Authorization', `Bearer ${token}`);
     };
 
     beforeEach(async () => {
+      token = publisher.generateAuthToken();
+
       const bootcamp = await Bootcamp.create({
         name: 'bootcamp1',
         description: 'description',
@@ -357,6 +427,22 @@ describe('/api/bootcamps', () => {
       });
 
       id = bootcamp._id;
+    });
+
+    it('should return 401 if client is not logged in', async () => {
+      token = '';
+
+      const res = await exec();
+
+      expect(res.status).toBe(401);
+    });
+
+    it('should return 403 if client is unauthorized', async () => {
+      token = user.generateAuthToken();
+
+      const res = await exec();
+
+      expect(res.status).toBe(403);
     });
 
     it('should return 404 if id is invalid', async () => {
@@ -395,16 +481,96 @@ describe('/api/bootcamps', () => {
     });
   });
 
+  describe('GET /:bootcampId/courses', () => {
+    let bootcamp;
+    let bootcampId;
+    let courses;
+
+    const exec = () => {
+      return request.get(`/api/bootcamps/${bootcampId}/courses`);
+    };
+
+    beforeEach(async () => {
+      bootcamp = await Bootcamp.create({
+        name: 'bootcamp1',
+        description: 'description',
+        address: 'address',
+        careers: ['Web Development'],
+      });
+
+      bootcampId = bootcamp._id;
+
+      courses = await Course.insertMany([
+        {
+          title: 'course1',
+          description: 'description',
+          weeks: 1,
+          tuition: 1000,
+          minimumSkill: 'beginner',
+          bootcamp: bootcamp._id,
+        },
+        {
+          title: 'course2',
+          description: 'description',
+          weeks: 2,
+          tuition: 2000,
+          minimumSkill: 'intermediate',
+          bootcamp: bootcamp._id,
+        },
+      ]);
+    });
+
+    afterEach(async () => {
+      await Course.deleteMany();
+    });
+
+    it('should return 404 if bootcampId is invalid', async () => {
+      bootcampId = 1;
+
+      const res = await exec();
+
+      expect(res.status).toBe(404);
+      expect(res.body.success).toBe(false);
+      expect(res.body.message).toBeDefined();
+    });
+
+    it('should return 200 with 0 data if bootcamp with the given bootcampId was not found', async () => {
+      bootcampId = mongoose.Types.ObjectId();
+
+      const res = await exec();
+
+      expect(res.status).toBe(200);
+      expect(res.body.success).toBe(true);
+      expect(res.body.count).toBe(0);
+    });
+
+    it('should return all bootcamp courses if id is valid', async () => {
+      const res = await exec();
+
+      expect(res.status).toBe(200);
+      expect(res.body.success).toBe(true);
+      expect(res.body.count).toBe(2);
+      expect(res.body.data.some((c) => c.title === 'course1')).toBeTruthy();
+      expect(res.body.data.some((c) => c.title === 'course2')).toBeTruthy();
+    });
+  });
+
   describe('POST /:bootcampId/courses', () => {
+    let token;
     let bootcamp;
     let bootcampId;
     let body;
 
     const exec = () => {
-      return request.post(`/api/bootcamps/${bootcampId}/courses`).send(body);
+      return request
+        .post(`/api/bootcamps/${bootcampId}/courses`)
+        .set('Authorization', `Bearer ${token}`)
+        .send(body);
     };
 
     beforeEach(async () => {
+      token = publisher.generateAuthToken();
+
       bootcamp = await Bootcamp.create({
         name: 'bootcamp1',
         description: 'description',
@@ -426,6 +592,22 @@ describe('/api/bootcamps', () => {
 
     afterEach(async () => {
       await Course.deleteMany();
+    });
+
+    it('should return 401 if client is not logged in', async () => {
+      token = '';
+
+      const res = await exec();
+
+      expect(res.status).toBe(401);
+    });
+
+    it('should return 403 if client is unauthorized', async () => {
+      token = user.generateAuthToken();
+
+      const res = await exec();
+
+      expect(res.status).toBe(403);
     });
 
     it('should return 400 if there is a validation error', async () => {

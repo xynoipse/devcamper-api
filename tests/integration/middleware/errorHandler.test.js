@@ -1,17 +1,33 @@
 const supertest = require('supertest');
 const mongoose = require('mongoose');
 const Bootcamp = require('../../../models/Bootcamp');
+const User = require('../../../models/User');
 const app = require('../../../app');
 const request = supertest(app);
 
 describe('errorHandler middleware', () => {
   let method;
   let id;
+  let user;
+  let token;
   let body;
   let bootcamp;
 
-  afterAll(() => {
-    mongoose.connection.close();
+  const exec = () => {
+    return request[method](`/api/bootcamps/${id}`)
+      .set('Authorization', `Bearer ${token}`)
+      .send(body);
+  };
+
+  beforeAll(async () => {
+    user = await User.create({
+      name: 'User',
+      email: 'user@user.com',
+      password: 'password',
+      role: 'publisher',
+    });
+
+    token = user.generateAuthToken();
   });
 
   beforeEach(async () => {
@@ -35,13 +51,14 @@ describe('errorHandler middleware', () => {
     body = {};
   });
 
+  afterAll(async () => {
+    await User.deleteMany();
+    mongoose.connection.close();
+  });
+
   afterEach(async () => {
     await Bootcamp.deleteMany();
   });
-
-  const exec = () => {
-    return request[method](`/api/bootcamps/${id}`).send(body);
-  };
 
   it('should return 404 if invalid or bad objectid is passed', async () => {
     id = '1';

@@ -2,21 +2,22 @@ const express = require('express');
 const router = express.Router();
 
 const bootcamp = require('../controllers/bootcamp');
+const { protect, authorize } = require('../middleware/auth');
 
 router
   .route('/')
   .get(bootcamp.index)
-  .post(bootcamp.create);
+  .post([protect, authorize('admin', 'publisher')], bootcamp.create);
 
 router
   .route('/:id')
   .get(bootcamp.show)
-  .put(bootcamp.update)
-  .delete(bootcamp.destroy);
+  .put([protect, authorize('admin', 'publisher')], bootcamp.update)
+  .delete([protect, authorize('admin', 'publisher')], bootcamp.destroy);
 
 router
   .route('/:id/photo')
-  .put(bootcamp.photoUpload);
+  .put([protect, authorize('admin', 'publisher')], bootcamp.photoUpload);
 
 router.route('/radius/:zipcode/:distance').get(bootcamp.getInRadius);
 
