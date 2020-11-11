@@ -61,6 +61,7 @@ describe('/api/courses', () => {
           tuition: 1000,
           minimumSkill: 'beginner',
           bootcamp: bootcamp._id,
+          user: publisher._id,
         },
         {
           title: 'course2',
@@ -69,6 +70,7 @@ describe('/api/courses', () => {
           tuition: 2000,
           minimumSkill: 'intermediate',
           bootcamp: bootcamp._id,
+          user: new mongoose.Types.ObjectId().toHexString(),
         },
       ]);
     });
@@ -183,6 +185,7 @@ describe('/api/courses', () => {
         tuition: 1000,
         minimumSkill: 'beginner',
         bootcamp: bootcamp._id,
+        user: publisher._id,
       });
 
       id = course._id;
@@ -232,14 +235,28 @@ describe('/api/courses', () => {
     beforeEach(async () => {
       token = publisher.generateAuthToken();
 
-      const course = await Course.create({
-        title: 'course1',
-        description: 'description',
-        weeks: 1,
-        tuition: 1000,
-        minimumSkill: 'beginner',
-        bootcamp: bootcamp._id,
-      });
+      await Course.insertMany([
+        {
+          title: 'course1',
+          description: 'description',
+          weeks: 1,
+          tuition: 1000,
+          minimumSkill: 'beginner',
+          bootcamp: bootcamp._id,
+          user: publisher._id,
+        },
+        {
+          title: 'course2',
+          description: 'description',
+          weeks: 1,
+          tuition: 1000,
+          minimumSkill: 'beginner',
+          bootcamp: bootcamp._id,
+          user: new mongoose.Types.ObjectId().toHexString(),
+        },
+      ]);
+
+      const course = await Course.findOne();
 
       id = course._id;
       title = 'newTitle';
@@ -292,6 +309,17 @@ describe('/api/courses', () => {
       expect(res.body.message).toBeDefined();
     });
 
+    it('should return 403 if client does not own the course', async () => {
+      const course = await Course.findOne({ title: 'course2' });
+      id = course._id;
+
+      const res = await exec();
+
+      expect(res.status).toBe(403);
+      expect(res.body.success).toBe(false);
+      expect(res.body.message).toBeDefined();
+    });
+
     it('should update the course if it is valid', async () => {
       await exec();
 
@@ -323,14 +351,28 @@ describe('/api/courses', () => {
     beforeEach(async () => {
       token = publisher.generateAuthToken();
 
-      const course = await Course.create({
-        title: 'course1',
-        description: 'description',
-        weeks: 1,
-        tuition: 1000,
-        minimumSkill: 'beginner',
-        bootcamp: bootcamp._id,
-      });
+      await Course.insertMany([
+        {
+          title: 'course1',
+          description: 'description',
+          weeks: 1,
+          tuition: 1000,
+          minimumSkill: 'beginner',
+          bootcamp: bootcamp._id,
+          user: publisher._id,
+        },
+        {
+          title: 'course2',
+          description: 'description',
+          weeks: 1,
+          tuition: 1000,
+          minimumSkill: 'beginner',
+          bootcamp: bootcamp._id,
+          user: new mongoose.Types.ObjectId().toHexString(),
+        },
+      ]);
+
+      const course = await Course.findOne();
 
       id = course._id;
     });
@@ -367,6 +409,17 @@ describe('/api/courses', () => {
       const res = await exec();
 
       expect(res.status).toBe(404);
+      expect(res.body.success).toBe(false);
+      expect(res.body.message).toBeDefined();
+    });
+
+    it('should return 403 if client does not own the course', async () => {
+      const course = await Course.findOne({ title: 'course2' });
+      id = course._id;
+
+      const res = await exec();
+
+      expect(res.status).toBe(403);
       expect(res.body.success).toBe(false);
       expect(res.body.message).toBeDefined();
     });

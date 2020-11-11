@@ -560,6 +560,7 @@ describe('/api/bootcamps', () => {
           tuition: 1000,
           minimumSkill: 'beginner',
           bootcamp: bootcamp._id,
+          user: publisher._id,
         },
         {
           title: 'course2',
@@ -568,6 +569,7 @@ describe('/api/bootcamps', () => {
           tuition: 2000,
           minimumSkill: 'intermediate',
           bootcamp: bootcamp._id,
+          user: publisher._id,
         },
       ]);
     });
@@ -623,13 +625,24 @@ describe('/api/bootcamps', () => {
     beforeEach(async () => {
       token = publisher.generateAuthToken();
 
-      bootcamp = await Bootcamp.create({
-        name: 'bootcamp1',
-        description: 'description',
-        address: 'address',
-        careers: ['Web Development'],
-        user: publisher._id,
-      });
+      await Bootcamp.insertMany([
+        {
+          name: 'bootcamp1',
+          description: 'description',
+          address: 'address',
+          careers: ['Web Development'],
+          user: publisher._id,
+        },
+        {
+          name: 'bootcamp2',
+          description: 'description',
+          address: 'address',
+          careers: ['Mobile Development'],
+          user: new mongoose.Types.ObjectId().toHexString(),
+        },
+      ]);
+
+      const bootcamp = await Bootcamp.findOne();
 
       bootcampId = bootcamp._id;
 
@@ -690,6 +703,17 @@ describe('/api/bootcamps', () => {
       const res = await exec();
 
       expect(res.status).toBe(404);
+      expect(res.body.success).toBe(false);
+      expect(res.body.message).toBeDefined();
+    });
+
+    it('should return 403 if client does not own the bootcamp', async () => {
+      const bootcamp = await Bootcamp.findOne({ name: 'bootcamp2' });
+      bootcampId = bootcamp._id;
+
+      const res = await exec();
+
+      expect(res.status).toBe(403);
       expect(res.body.success).toBe(false);
       expect(res.body.message).toBeDefined();
     });

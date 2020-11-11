@@ -33,9 +33,12 @@ exports.index = async (req, res) => {
  */
 exports.create = async (req, res) => {
   req.body.bootcamp = req.params.bootcampId;
+  req.body.user = req.user.id;
 
   const bootcamp = await Bootcamp.findById(req.params.bootcampId);
   if (!bootcamp) throw new ErrorResponse('Bootcamp Not Found', 404);
+  if (bootcamp.user.toHexString() !== req.user.id && req.user.role !== 'admin')
+    throw new ErrorResponse('Unauthorized', 403);
 
   const course = await Course.create(req.body);
 
@@ -64,12 +67,16 @@ exports.show = async (req, res) => {
  * @access  Private
  */
 exports.update = async (req, res) => {
-  const course = await Course.findByIdAndUpdate(req.params.id, req.body, {
+  let course = await Course.findById(req.params.id);
+
+  if (!course) throw new ErrorResponse('Course Not Found', 404);
+  if (course.user.toHexString() !== req.user.id && req.user.role !== 'admin')
+    throw new ErrorResponse('Unauthorized', 403);
+
+  course = await Course.findByIdAndUpdate(req.params.id, req.body, {
     new: true,
     runValidators: true,
   });
-
-  if (!course) throw new ErrorResponse('Course Not Found', 404);
 
   res.json({ success: true, data: course });
 };
@@ -83,6 +90,8 @@ exports.destroy = async (req, res) => {
   const course = await Course.findById(req.params.id);
 
   if (!course) throw new ErrorResponse('Course Not Found', 404);
+  if (course.user.toHexString() !== req.user.id && req.user.role !== 'admin')
+    throw new ErrorResponse('Unauthorized', 403);
 
   await course.remove();
 

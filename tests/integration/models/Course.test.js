@@ -33,6 +33,7 @@ describe('Course model', () => {
         tuition: 1000,
         minimumSkill: 'beginner',
         bootcamp: bootcamp._id,
+        user: new mongoose.Types.ObjectId().toHexString(),
       },
       {
         title: 'course2',
@@ -41,6 +42,7 @@ describe('Course model', () => {
         tuition: 2000,
         minimumSkill: 'beginner',
         bootcamp: bootcamp._id,
+        user: new mongoose.Types.ObjectId().toHexString(),
       },
     ];
 
@@ -71,6 +73,7 @@ describe('Course model', () => {
       tuition: 3000,
       minimumSkill: 'beginner',
       bootcamp: bootcamp._id,
+      user: new mongoose.Types.ObjectId().toHexString(),
     });
 
     const bootcampInDb = await Bootcamp.findOne();
