@@ -31,6 +31,7 @@ describe('/api/courses', () => {
       description: 'description',
       address: 'address',
       careers: ['Web Development'],
+      user: publisher._id,
     });
   });
 

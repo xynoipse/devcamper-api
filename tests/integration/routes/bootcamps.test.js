@@ -50,6 +50,7 @@ describe('/api/bootcamps', () => {
           address: 'address',
           jobGuarantee: true,
           careers: ['Web Development'],
+          user: publisher._id,
         },
         {
           name: 'bootcamp2',
@@ -57,6 +58,7 @@ describe('/api/bootcamps', () => {
           address: 'address',
           jobGuarantee: false,
           careers: ['Mobile Development'],
+          user: publisher._id,
         },
       ]);
     });
@@ -172,6 +174,7 @@ describe('/api/bootcamps', () => {
         description: 'description',
         address: 'address',
         careers: ['Web Development'],
+        user: new mongoose.Types.ObjectId().toHexString(),
       };
     });
 
@@ -211,6 +214,17 @@ describe('/api/bootcamps', () => {
       expect(res.body.success).toBe(false);
       expect(res.body.message).toBeDefined();
       expect(res.body.errors.name).toBeDefined();
+    });
+
+    it('should return 400 if client already published a bootcamp', async () => {
+      body.user = publisher._id;
+      await Bootcamp.insertMany([body]);
+
+      const res = await exec();
+
+      expect(res.status).toBe(400);
+      expect(res.body.success).toBe(false);
+      expect(res.body.message).toBeDefined();
     });
 
     it('should save the bootcamp if it is valid', async () => {
@@ -260,6 +274,7 @@ describe('/api/bootcamps', () => {
         description: 'description',
         address: 'address',
         careers: ['Web Development'],
+        user: publisher._id,
       });
 
       id = bootcamp._id;
@@ -315,12 +330,14 @@ describe('/api/bootcamps', () => {
           description: 'description',
           address: 'address',
           careers: ['Web Development'],
+          user: publisher._id,
         },
         {
           name: 'bootcamp2',
           description: 'description',
           address: 'address',
           careers: ['Mobile Development'],
+          user: new mongoose.Types.ObjectId().toHexString(),
         },
       ]);
 
@@ -388,6 +405,17 @@ describe('/api/bootcamps', () => {
       expect(res.body.message).toBeDefined();
     });
 
+    it('should return 403 if client does not own the bootcamp', async () => {
+      const bootcamp = await Bootcamp.findOne({ name: 'bootcamp2' });
+      id = bootcamp._id;
+
+      const res = await exec();
+
+      expect(res.status).toBe(403);
+      expect(res.body.success).toBe(false);
+      expect(res.body.message).toBeDefined();
+    });
+
     it('should update the bootcamp if it is valid', async () => {
       await exec();
 
@@ -419,12 +447,24 @@ describe('/api/bootcamps', () => {
     beforeEach(async () => {
       token = publisher.generateAuthToken();
 
-      const bootcamp = await Bootcamp.create({
-        name: 'bootcamp1',
-        description: 'description',
-        address: 'address',
-        careers: ['Web Development'],
-      });
+      await Bootcamp.insertMany([
+        {
+          name: 'bootcamp1',
+          description: 'description',
+          address: 'address',
+          careers: ['Web Development'],
+          user: publisher._id,
+        },
+        {
+          name: 'bootcamp2',
+          description: 'description',
+          address: 'address',
+          careers: ['Mobile Development'],
+          user: new mongoose.Types.ObjectId().toHexString(),
+        },
+      ]);
+
+      const bootcamp = await Bootcamp.findOne();
 
       id = bootcamp._id;
     });
@@ -465,6 +505,17 @@ describe('/api/bootcamps', () => {
       expect(res.body.message).toBeDefined();
     });
 
+    it('should return 403 if client does not own the bootcamp', async () => {
+      const bootcamp = await Bootcamp.findOne({ name: 'bootcamp2' });
+      id = bootcamp._id;
+
+      const res = await exec();
+
+      expect(res.status).toBe(403);
+      expect(res.body.success).toBe(false);
+      expect(res.body.message).toBeDefined();
+    });
+
     it('should delete the bootcamp if it is valid', async () => {
       await exec();
 
@@ -496,6 +547,7 @@ describe('/api/bootcamps', () => {
         description: 'description',
         address: 'address',
         careers: ['Web Development'],
+        user: publisher._id,
       });
 
       bootcampId = bootcamp._id;
@@ -576,6 +628,7 @@ describe('/api/bootcamps', () => {
         description: 'description',
         address: 'address',
         careers: ['Web Development'],
+        user: publisher._id,
       });
 
       bootcampId = bootcamp._id;

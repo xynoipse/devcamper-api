@@ -15,6 +15,7 @@ describe('Course model', () => {
       description: 'description',
       address: 'address',
       careers: ['Web Development'],
+      user: new mongoose.Types.ObjectId().toHexString(),
     });
   });
 

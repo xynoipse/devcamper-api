@@ -37,12 +37,14 @@ describe('errorHandler middleware', () => {
         description: 'description',
         address: 'address',
         careers: ['Web Development'],
+        user: user._id,
       },
       {
         name: 'bootcamp2',
         description: 'description',
         address: 'address',
         careers: ['Mobile Development'],
+        user: new mongoose.Types.ObjectId().toHexString(),
       },
     ]);
 
@@ -83,9 +85,10 @@ describe('errorHandler middleware', () => {
   });
 
   it('should return 400 if there is a mongoose validation error', async () => {
+    await Bootcamp.findByIdAndRemove(id);
+
     method = 'post';
     id = '';
-    body = {};
 
     const res = await exec();
 

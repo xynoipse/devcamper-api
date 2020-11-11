@@ -20,6 +20,12 @@ exports.index = async (req, res) => {
  * @access  Private
  */
 exports.create = async (req, res) => {
+  req.body.user = req.user.id;
+
+  const publishedBootcamp = await Bootcamp.findOne({ user: req.user.id });
+  if (publishedBootcamp && req.user.role !== 'admin')
+    throw new ErrorResponse('You have already published a bootcamp', 400);
+
   const bootcamp = await Bootcamp.create(req.body);
 
   res.status(201).json({ success: true, data: bootcamp });
@@ -44,12 +50,16 @@ exports.show = async (req, res) => {
  * @access  Private
  */
 exports.update = async (req, res) => {
-  const bootcamp = await Bootcamp.findByIdAndUpdate(req.params.id, req.body, {
+  let bootcamp = await Bootcamp.findById(req.params.id);
+
+  if (!bootcamp) throw new ErrorResponse('Bootcamp Not Found', 404);
+  if (bootcamp.user.toHexString() !== req.user.id && req.user.role !== 'admin')
+    throw new ErrorResponse('Unauthorized', 403);
+
+  bootcamp = await Bootcamp.findByIdAndUpdate(req.params.id, req.body, {
     new: true,
     runValidators: true,
   });
-
-  if (!bootcamp) throw new ErrorResponse('Bootcamp Not Found', 404);
 
   res.json({ success: true, data: bootcamp });
 };
@@ -63,6 +73,8 @@ exports.destroy = async (req, res) => {
   const bootcamp = await Bootcamp.findById(req.params.id);
 
   if (!bootcamp) throw new ErrorResponse('Bootcamp Not Found', 404);
+  if (bootcamp.user.toHexString() !== req.user.id && req.user.role !== 'admin')
+    throw new ErrorResponse('Unauthorized', 403);
 
   await bootcamp.remove();
 
@@ -106,6 +118,8 @@ exports.photoUpload = async (req, res) => {
   const bootcamp = await Bootcamp.findById(req.params.id);
 
   if (!bootcamp) throw new ErrorResponse('Bootcamp Not Found', 404);
+  if (bootcamp.user.toHexString() !== req.user.id && req.user.role !== 'admin')
+    throw new ErrorResponse('Unauthorized', 403);
   if (!req.files) throw new ErrorResponse('Please upload a file', 400);
 
   const filename = imageUpload(req.files.file, `photo_${bootcamp._id}`);

@@ -22,6 +22,7 @@ describe('Bootcamp model', () => {
         description: 'description',
         address: 'address',
         careers: ['Web Development'],
+        user: new mongoose.Types.ObjectId().toHexString(),
       };
 
       bootcamp = await Bootcamp.create(body);
