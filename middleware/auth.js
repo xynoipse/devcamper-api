@@ -16,7 +16,11 @@ exports.protect = async (req, res, next) => {
 
   try {
     const decoded = jwt.verify(token, config.get('jwtSecret'));
-    req.user = await User.findById(decoded._id);
+    const user = await User.findById(decoded._id);
+
+    if (!user) throw new ErrorResponse('Invalid Token', 400);
+
+    req.user = user;
     next();
   } catch (error) {
     throw new ErrorResponse('Invalid Token', 400);

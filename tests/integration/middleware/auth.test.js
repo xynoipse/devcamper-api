@@ -63,6 +63,15 @@ describe('auth middleware', () => {
       expect(res.body.success).toBe(false);
     });
 
+    it('should return 400 if valid token user was not found', async () => {
+      token = new User().generateAuthToken();
+
+      const res = await exec();
+
+      expect(res.status).toBe(400);
+      expect(res.body.success).toBe(false);
+    });
+
     it('should return 201 if token is valid', async () => {
       const res = await exec();
 
