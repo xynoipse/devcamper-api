@@ -10,5 +10,12 @@
   "geocoderApiKey": "GEOCODER_API_KEY",
 
   "fileUploadPath": "FILE_UPLOAD_PATH",
-  "maxFileUpload": "MAX_FILE_UPLOAD"
+  "maxFileUpload": "MAX_FILE_UPLOAD",
+
+  "smtpHost": "SMTP_HOST",
+  "smtpPort": "SMTP_PORT",
+  "smtpUsername": "SMTP_USERNAME",
+  "smtpPassword": "SMTP_PASSWORD",
+  "smtpFromAddress": "SMTP_FROM_ADDRESS",
+  "smtpFromName": "SMTP_FROM_NAME"
 }

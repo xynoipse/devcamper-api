@@ -10,5 +10,12 @@
   "geocoderApiKey": "",
   
   "fileUploadPath": "",
-  "maxFileUpload": ""
+  "maxFileUpload": "",
+
+  "smtpHost": "smtp.mailtrap.io",
+  "smtpPort": "2525",
+  "smtpUsername": "",
+  "smtpPassword": "",
+  "smtpFromAddress": "",
+  "smtpFromName": ""
 }
