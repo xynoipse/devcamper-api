@@ -15,6 +15,7 @@ module.exports = (app) => {
   app.use('/api/courses', require('../routes/courses'));
   app.use('/api/auth', require('../routes/auth'));
   app.use('/api/users', require('../routes/users'));
+  app.use('/api/reviews', require('../routes/reviews'));
 
   app.use(errorHandler);
 };

@@ -139,6 +139,35 @@ bootcampSchema.statics.getAverageCost = async function (bootcampId) {
   }
 };
 
+// Calculate bootcamp averageRating
+bootcampSchema.statics.getAverageRating = async function (bootcampId) {
+  const obj = await this.model('Review').aggregate([
+    {
+      $match: { bootcamp: bootcampId },
+    },
+    {
+      $group: {
+        _id: '$bootcamp',
+        averageRating: { $avg: '$rating' },
+      },
+    },
+  ]);
+
+  try {
+    if (obj[0]) {
+      return await this.findByIdAndUpdate(bootcampId, {
+        averageRating: obj[0].averageRating,
+      });
+    }
+
+    await this.findByIdAndUpdate(bootcampId, {
+      averageRating: undefined,
+    });
+  } catch (error) {
+    console.log(error);
+  }
+};
+
 // Slug
 bootcampSchema.pre('save', function (next) {
   this.slug = slugify(this.name, { lower: true });
