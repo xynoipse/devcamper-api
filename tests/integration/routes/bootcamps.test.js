@@ -2,6 +2,7 @@ const supertest = require('supertest');
 const mongoose = require('mongoose');
 const Bootcamp = require('../../../models/Bootcamp');
 const Course = require('../../../models/Course');
+const Review = require('../../../models/Review');
 const User = require('../../../models/User');
 const app = require('../../../app');
 const request = supertest(app);
@@ -728,6 +729,200 @@ describe('/api/bootcamps', () => {
     });
 
     it('should return the created bootcamp course if it is valid', async () => {
+      const res = await exec();
+
+      expect(res.body.success).toBe(true);
+      expect(res.body.data).toHaveProperty('_id');
+      expect(res.body.data).toHaveProperty('title', body.title);
+      expect(res.body.data).toHaveProperty(
+        'bootcamp',
+        bootcampId.toHexString()
+      );
+    });
+  });
+
+  describe('GET /:bootcampId/review', () => {
+    let bootcamp;
+    let bootcampId;
+
+    const exec = () => {
+      return request.get(`/api/bootcamps/${bootcampId}/reviews`);
+    };
+
+    beforeEach(async () => {
+      bootcamp = await Bootcamp.create({
+        name: 'bootcamp1',
+        description: 'description',
+        address: 'address',
+        careers: ['Web Development'],
+        user: publisher._id,
+      });
+
+      bootcampId = bootcamp._id;
+
+      await Review.insertMany([
+        {
+          title: 'review1',
+          text: 'text',
+          rating: 1,
+          bootcamp: bootcamp._id,
+          user: user._id,
+        },
+        {
+          title: 'review2',
+          text: 'text',
+          rating: 2,
+          bootcamp: bootcamp._id,
+          user: mongoose.Types.ObjectId(),
+        },
+      ]);
+    });
+
+    afterEach(async () => {
+      await Review.deleteMany();
+    });
+
+    it('should return 404 if bootcampId is invalid', async () => {
+      bootcampId = 1;
+
+      const res = await exec();
+
+      expect(res.status).toBe(404);
+      expect(res.body.success).toBe(false);
+      expect(res.body.message).toBeDefined();
+    });
+
+    it('should return 200 with 0 data if bootcamp with the given bootcampId was not found', async () => {
+      bootcampId = mongoose.Types.ObjectId();
+
+      const res = await exec();
+
+      expect(res.status).toBe(200);
+      expect(res.body.success).toBe(true);
+      expect(res.body.count).toBe(0);
+    });
+
+    it('should return all bootcamp reviews if id is valid', async () => {
+      const res = await exec();
+
+      expect(res.status).toBe(200);
+      expect(res.body.success).toBe(true);
+      expect(res.body.count).toBe(2);
+      expect(res.body.data.some((r) => r.title === 'review1')).toBeTruthy();
+      expect(res.body.data.some((r) => r.title === 'review2')).toBeTruthy();
+    });
+  });
+
+  describe('POST /:bootcampId/reviews', () => {
+    let token;
+    let bootcamp;
+    let bootcampId;
+    let body;
+
+    const exec = () => {
+      return request
+        .post(`/api/bootcamps/${bootcampId}/reviews`)
+        .set('Authorization', `Bearer ${token}`)
+        .send(body);
+    };
+
+    beforeEach(async () => {
+      token = user.generateAuthToken();
+
+      bootcamp = await Bootcamp.create({
+        name: 'bootcamp1',
+        description: 'description',
+        address: 'address',
+        careers: ['Web Development'],
+        user: publisher._id,
+      });
+
+      bootcampId = bootcamp._id;
+
+      body = {
+        title: 'review1',
+        text: 'text',
+        rating: 1,
+      };
+    });
+
+    afterEach(async () => {
+      await Review.deleteMany();
+    });
+
+    it('should return 401 if client is not logged in', async () => {
+      token = '';
+
+      const res = await exec();
+
+      expect(res.status).toBe(401);
+    });
+
+    it('should return 403 if client is unauthorized', async () => {
+      token = publisher.generateAuthToken();
+
+      const res = await exec();
+
+      expect(res.status).toBe(403);
+    });
+
+    it('should return 400 if client already submitted a review', async () => {
+      await Review.create({
+        title: 'review1',
+        text: 'text',
+        rating: 1,
+        bootcamp: bootcamp._id,
+        user: user._id,
+      });
+
+      const res = await exec();
+
+      expect(res.status).toBe(400);
+      expect(res.body.success).toBe(false);
+      expect(res.body.message).toBeDefined();
+    });
+
+    it('should return 400 if there is a validation error', async () => {
+      body.title = '';
+
+      const res = await exec();
+
+      expect(res.status).toBe(400);
+      expect(res.body.success).toBe(false);
+      expect(res.body.message).toBeDefined();
+      expect(res.body.errors.title).toBeDefined();
+    });
+
+    it('should return 404 if bootcampId is invalid', async () => {
+      bootcampId = 1;
+
+      const res = await exec();
+
+      expect(res.status).toBe(404);
+      expect(res.body.success).toBe(false);
+      expect(res.body.message).toBeDefined();
+    });
+
+    it('should return 404 if bootcamp with the given bootcampId was not found', async () => {
+      bootcampId = mongoose.Types.ObjectId();
+
+      const res = await exec();
+
+      expect(res.status).toBe(404);
+      expect(res.body.success).toBe(false);
+      expect(res.body.message).toBeDefined();
+    });
+
+    it('should save the bootcamp review if it is valid', async () => {
+      await exec();
+
+      const review = await Review.findOne({ bootcamp: bootcampId });
+
+      expect(review).not.toBeNull();
+      expect(review).toHaveProperty('title', body.title);
+    });
+
+    it('should return the created bootcamp review if it is valid', async () => {
       const res = await exec();
 
       expect(res.body.success).toBe(true);
