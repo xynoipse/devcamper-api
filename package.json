@@ -8,6 +8,9 @@
     "dev": "nodemon server",
     "test": "jest --watchAll --verbose --coverage --runInBand"
   },
+  "engines": {
+    "node": "12.x"
+  },
   "author": "Jason",
   "license": "MIT",
   "dependencies": {

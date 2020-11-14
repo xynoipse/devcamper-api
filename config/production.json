@@ -1,0 +1,14 @@
+{
+  "port": "5000",
+  "mongoURI": "mongodb+srv://devcamper_user:devcamper_password@devcamper.wneac.mongodb.net/devcamper?retryWrites=true&w=majority",
+
+  "jwtSecret": "SECRET",
+  "jwtExpire": "30d",
+  "jwtCookieExpire": "30",
+
+  "geocoderProvider": "mapquest",
+  "geocoderApiKey": "aURk9YRMYoZMLj5xb0PzSV3D4BIZwObG",
+  
+  "fileUploadPath": "./public/uploads",
+  "maxFileUpload": "1000000"
+}

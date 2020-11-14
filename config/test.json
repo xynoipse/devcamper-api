@@ -1,0 +1,21 @@
+{
+  "port": "5000",
+  "mongoURI": "mongodb://localhost/devcamper_test",
+
+  "jwtSecret": "SECRET",
+  "jwtExpire": "30d",
+  "jwtCookieExpire": "30",
+
+  "geocoderProvider": "mapquest",
+  "geocoderApiKey": "aURk9YRMYoZMLj5xb0PzSV3D4BIZwObG",
+  
+  "fileUploadPath": "./public/testing",
+  "maxFileUpload": "1000000",
+
+  "smtpHost": "smtp.mailtrap.io",
+  "smtpPort": "2525",
+  "smtpUsername": "7f7f522f60d95b",
+  "smtpPassword": "1eb3752d27e5ad",
+  "smtpFromAddress": "noreply@devcamper.io",
+  "smtpFromName": "Devcamper"
+}
