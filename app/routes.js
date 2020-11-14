@@ -4,9 +4,6 @@ const express = require('express');
 const errorHandler = require('../middleware/errorHandler');
 
 module.exports = (app) => {
-  // Body parser
-  app.use(express.json());
-
   // Set static folder
   app.use(express.static(path.join(__dirname, '../public')));
 
