@@ -62,6 +62,17 @@ describe('errorHandler middleware', () => {
     await Bootcamp.deleteMany();
   });
 
+  it('should return 400 if invalid data is passed', async () => {
+    body = { name: { $gt: '' } };
+
+    const res = await exec();
+
+    expect(res.status).toBe(400);
+    expect(res.body.success).toBe(false);
+    expect(res.body.message).toMatch(/The given data was invalid/);
+    expect(res.body.errors).not.toBeDefined();
+  });
+
   it('should return 404 if invalid or bad objectid is passed', async () => {
     id = '1';
 

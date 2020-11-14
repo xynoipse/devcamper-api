@@ -20,6 +20,17 @@ describe('errorHandler middleware', () => {
     };
   });
 
+  it('should return 400 if there is a casterror', () => {
+    err = { name: 'CastError' };
+
+    errorHandler(err, req, res, next);
+
+    expect(res.status).toBe(400);
+    expect(res.body.success).toBe(false);
+    expect(res.body.message).toMatch(/The given data was invalid/);
+    expect(res.body.errors).not.toBeDefined();
+  });
+
   it('should return 404 if there is a objectid casterror', () => {
     err = { name: 'CastError', kind: 'ObjectId' };
 

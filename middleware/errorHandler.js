@@ -5,6 +5,12 @@ const errorHandler = (err, req, res, next) => {
   let error = { ...err };
   error.message = err.message;
 
+  // Mongoose CastError
+  if (err.name === 'CastError') {
+    const message = 'The given data was invalid.';
+    error = new ErrorResponse(message, 400);
+  }
+
   // Mongoose bad ObjectId
   if (err.name === 'CastError' && err.kind === 'ObjectId') {
     const message = 'Resource not found';
